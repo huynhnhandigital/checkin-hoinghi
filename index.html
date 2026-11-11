@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Check-in khách hàng</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b5cad'/%3E%3Cpath d='M7 8v16M10 8v16M14 8v16M16 8v16M20 8v16M24 8v16M26 8v16' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <div id="loading" class="loading"><div class="spinner"></div><p>Đang tải dữ liệu…</p></div>
@@ -105,10 +105,13 @@
           <button id="labelBtn" class="btn primary" type="button">In tem 50×30mm</button>
           <button id="zipBtn" class="btn" type="button">Tải tất cả ảnh (.zip)</button>
         </div>
+        <div class="usb-row">
+          <button id="usbStatus" class="usb-status" type="button"><span class="dot"></span><span id="usbStatusText">Máy in tem: chưa kết nối (bấm để kết nối)</span></button>
+          <button id="labelDialogBtn" class="btn small ghost" type="button">In qua hộp thoại in (dự phòng)</button>
+        </div>
         <p class="muted small hint">
-          <b>In tem trên máy in tem:</b> trong hộp thoại in chọn máy in tem → Khổ giấy <b id="labelHint">50 x 30 mm</b> (khổ tùy chỉnh rộng 50 × cao 30) → <b>Bố cục</b>: chọn Dọc hoặc Ngang sao cho bản xem trước là <b>tem nằm ngang, chữ thẳng</b> → Lề: <b>Không có</b> → Tỷ lệ: <b>100%</b> → bỏ chọn <b>Đầu trang và chân trang</b>.
-          Nếu không thấy khổ 50×30: bấm "In bằng hộp thoại hệ thống" (⌥⌘P) và chọn khổ đó ở mục Khổ giấy.
-          Mỗi khách in 1 tem; bấm "In tem" trên từng thẻ để in riêng 1 khách.
+          <b>In tem:</b> app gửi lệnh thẳng tới máy in tem qua cáp USB (dùng Google Chrome), không cần chỉnh khổ giấy. Lần đầu bấm "In tem", Chrome hỏi chọn thiết bị → chọn <b>XP-470B</b> → <b>Kết nối</b>; các lần sau in ngay.
+          Tem <b id="labelHint">50 x 30 mm</b>, mỗi khách 1 tem; bấm "In tem" trên từng thẻ để in riêng 1 khách.
           Ảnh PNG dùng để gửi khách qua Zalo/email — hãy thử trước xem máy quét có đọc được mã trên màn hình điện thoại không.
         </p>
         <div id="codeGrid" class="code-grid"></div>
@@ -121,8 +124,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="config.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="config.js?v=6"></script>
+  <script src="app.js?v=6"></script>
   <script src="https://accounts.google.com/gsi/client" async defer onload="onGsiLoaded()"></script>
 </body>
 </html>

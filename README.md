@@ -105,11 +105,11 @@ Máy quét USB ──(gõ mã + Enter)──► Web app (GitHub Pages) ──►
 
 ### Mã vạch gửi khách
 
-- Tab **Mã vạch** → **In tem 50×30mm**: tem rộng 50mm (ngang đầu in) × cao 30mm (theo chiều chạy giấy), chữ thẳng: tên khách ở trên, mã vạch ở giữa, mã KH ở dưới. Mỗi khách 1 tem; nút **In tem** trên từng thẻ để in riêng 1 khách.
-  - Máy in tem (Xprinter XP-470B trên macOS) cần có khổ giấy tùy chỉnh **rộng 50 mm × cao 30 mm, lề 0** (Hộp thoại in hệ thống → Khổ giấy → Quản lý kích thước tùy chỉnh).
-  - Trong hộp thoại in của Chrome: chọn máy in tem → **Khổ giấy 50 x 30 mm** → **Bố cục**: chọn Dọc/Ngang sao cho bản xem trước là tem nằm ngang, chữ thẳng → Lề: **Không có** → Tỷ lệ: **100%** → bỏ chọn **Đầu trang và chân trang**.
-  - Nếu Chrome không có khổ 50×30: bấm **In bằng hộp thoại hệ thống** (⌥⌘P) → chọn khổ đó, Tỷ lệ 100%; ở mục Tính năng máy in đặt **Type: LabelGaps** để máy in canh theo khe hở giữa các tem.
-  - Đổi khổ tem khác: sửa `LABEL_WIDTH_MM` (ngang đầu in) / `LABEL_HEIGHT_MM` (chiều chạy giấy) trong `config.js`.
+- Tab **Mã vạch** → **In tem 50×30mm**: app **gửi lệnh thẳng tới máy in tem qua cáp USB** (WebUSB, dùng Google Chrome/Edge), không qua hộp thoại in nên không bị xoay/lệch khổ. Tem rộng 50mm × cao 30mm: tên khách (tiếng Việt đủ dấu) ở trên, mã vạch ở giữa, mã KH ở dưới. Mỗi khách 1 tem; nút **In tem** trên từng thẻ để in riêng 1 khách.
+  - Lần đầu bấm **In tem** (hoặc nút "Máy in tem: chưa kết nối"), Chrome hiện hộp chọn thiết bị → chọn **XP-470B** → **Kết nối**. Các lần sau Chrome nhớ quyền, in ngay.
+  - Máy in tem dùng lệnh TSPL (Xprinter XP-470B, 203 dpi). Nếu đổi khổ tem: sửa `LABEL_WIDTH_MM` (ngang đầu in), `LABEL_HEIGHT_MM` (chiều chạy giấy), `LABEL_GAP_MM` (khe hở giữa 2 tem) trong `config.js`.
+  - Nếu báo lỗi kết nối USB: rút/cắm lại cáp USB máy in tem, đợi máy in xong các lệnh đang in rồi thử lại.
+  - Dự phòng: nút **In qua hộp thoại in** dùng hộp thoại in của Chrome (cần chọn đúng khổ giấy 50×30mm, lề Không có, tỷ lệ 100%).
   - Đổi khổ tem khác: sửa `LABEL_WIDTH_MM` / `LABEL_HEIGHT_MM` / `LABEL_LANDSCAPE` trong `config.js`.
 - Tab **Mã vạch** → **In thẻ (A4)**: in thẻ giấy A4 (2 thẻ/hàng).
 - **Tải ảnh PNG** từng khách hoặc **Tải tất cả ảnh (.zip)** để gửi Zalo/email.

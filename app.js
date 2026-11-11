@@ -9,7 +9,7 @@
 
   const CFG = Object.assign({
     API_URL: '', GOOGLE_CLIENT_ID: '', ORG_NAME: '', EVENT_NAME: 'Check-in khách hàng', REFRESH_SECONDS: 20,
-    LABEL_WIDTH_MM: 50, LABEL_HEIGHT_MM: 30,
+    LABEL_WIDTH_MM: 50, LABEL_HEIGHT_MM: 30, LABEL_GAP_MM: 2, LABEL_DPI: 203,
   }, window.APP_CONFIG || {});
   // Tem đúng như khi chạy ra khỏi máy in: rộng (ngang đầu in) × cao (chiều chạy giấy)
   const PAGE_W = Number(CFG.LABEL_WIDTH_MM) || 50;
@@ -483,6 +483,160 @@
     window.print();
   }
 
+  // ======== IN TEM TRỰC TIẾP QUA USB (lệnh TSPL, không qua hộp thoại in) ========
+  // Mỗi tem được vẽ thành ảnh đen trắng đúng độ phân giải máy in rồi gửi lệnh BITMAP,
+  // nên tên tiếng Việt hiển thị đủ dấu và mỗi vạch mã vạch là số nguyên điểm in (quét chuẩn).
+  const DOTS_PER_MM = (Number(CFG.LABEL_DPI) || 203) / 25.4;
+  const USB_FILTERS = [{ vendorId: 0x2d37 }, { classCode: 7 }]; // Xprinter + mọi máy in USB
+  const usbp = { device: null, ep: 0, busy: false };
+  const ascii = (s) => new TextEncoder().encode(s);
+  function concatBytes(parts) {
+    const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+    let o = 0;
+    parts.forEach((p) => { out.set(p, o); o += p.length; });
+    return out;
+  }
+
+  function renderLabelCanvas(c) {
+    const W = Math.ceil((PAGE_W * DOTS_PER_MM) / 8) * 8;
+    const H = Math.round(PAGE_H * DOTS_PER_MM);
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const g = cv.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#000'; g.textAlign = 'center'; g.textBaseline = 'top';
+    const pad = Math.round(1.5 * DOTS_PER_MM);
+    const maxW = W - 2 * pad;
+
+    // Tên khách: tối đa 2 dòng, tự thu nhỏ chữ nếu tên dài
+    let size = Math.round(3.0 * DOTS_PER_MM);
+    let lines = [];
+    for (; size >= 15; size -= 2) {
+      g.font = `bold ${size}px Arial, Helvetica, sans-serif`;
+      lines = wrapLines(g, c.name || c.code, maxW, 2);
+      if (!/…$/.test(lines[lines.length - 1] || '')) break;
+    }
+    const lh = Math.round(size * 1.12);
+    let y = pad - 2;
+    lines.forEach((ln) => { g.fillText(ln, W / 2, y); y += lh; });
+
+    // Mã KH ở đáy tem
+    const codeSize = Math.round(2.9 * DOTS_PER_MM);
+    g.font = `bold ${codeSize}px "Courier New", Courier, monospace`;
+    const codeY = H - pad - codeSize + 2;
+    g.fillText(c.code, W / 2, codeY);
+
+    // Mã vạch ở giữa: độ rộng vạch là số nguyên điểm in (4→1) để vừa khổ và quét chuẩn
+    const top = y + Math.round(1.2 * DOTS_PER_MM);
+    const bh = Math.max(24, codeY - Math.round(1 * DOTS_PER_MM) - top);
+    const bc = document.createElement('canvas');
+    let ok = false;
+    for (let mw = 4; mw >= 1; mw--) {
+      ok = drawBarcode(bc, c.code, { width: mw, height: bh, displayValue: false, margin: 0, background: '#ffffff' });
+      if (ok && bc.width <= maxW) break;
+    }
+    if (ok) g.drawImage(bc, Math.round((W - bc.width) / 2), top);
+    return cv;
+  }
+
+  function labelTSPL(c) {
+    const cv = renderLabelCanvas(c);
+    const W = cv.width, H = cv.height, wb = W / 8;
+    const px = cv.getContext('2d').getImageData(0, 0, W, H).data;
+    const bits = new Uint8Array(wb * H).fill(0xff); // TSPL: bit 1 = trắng, bit 0 = in đen
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4;
+        if (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114 < 140) bits[y * wb + (x >> 3)] &= ~(0x80 >> (x & 7));
+      }
+    }
+    return concatBytes([ascii(`CLS\r\nBITMAP 0,0,${wb},${H},0,`), bits, ascii('\r\nPRINT 1,1\r\n')]);
+  }
+
+  function buildLabelTSPL(list) {
+    const gap = Number(CFG.LABEL_GAP_MM);
+    const setup = `SIZE ${PAGE_W} mm,${PAGE_H} mm\r\nGAP ${isNaN(gap) ? 2 : gap} mm,0 mm\r\nDIRECTION 1,0\r\nREFERENCE 0,0\r\nSET TEAR ON\r\n`;
+    return concatBytes([ascii(setup)].concat(list.map(labelTSPL)));
+  }
+
+  async function usbOpen(dev) {
+    if (!dev.opened) await dev.open();
+    if (dev.configuration === null) await dev.selectConfiguration(1);
+    for (const itf of dev.configuration.interfaces) {
+      for (const alt of itf.alternates) {
+        const ep = alt.endpoints.find((e) => e.direction === 'out' && e.type === 'bulk');
+        if (!ep) continue;
+        if (!itf.claimed) await dev.claimInterface(itf.interfaceNumber);
+        if (itf.alternate.alternateSetting !== alt.alternateSetting) await dev.selectAlternateInterface(itf.interfaceNumber, alt.alternateSetting);
+        usbp.device = dev;
+        usbp.ep = ep.endpointNumber;
+        return dev;
+      }
+    }
+    throw new Error('Thiết bị này không có cổng in (bulk OUT).');
+  }
+
+  async function usbConnect(ask) {
+    if (!navigator.usb) throw new Error('Trình duyệt không hỗ trợ in USB trực tiếp — hãy dùng Google Chrome hoặc Microsoft Edge.');
+    if (usbp.device && usbp.device.opened) return usbp.device;
+    const known = await navigator.usb.getDevices();
+    let dev = known.find((d) => d.vendorId === 0x2d37) || known[0];
+    if (!dev && ask) dev = await navigator.usb.requestDevice({ filters: USB_FILTERS });
+    if (!dev) return null;
+    await usbOpen(dev);
+    renderUsbStatus();
+    return dev;
+  }
+
+  async function usbSend(bytes) {
+    for (let i = 0; i < bytes.length; i += 16384) {
+      const r = await usbp.device.transferOut(usbp.ep, bytes.subarray(i, i + 16384));
+      if (r.status !== 'ok') throw new Error('Gửi dữ liệu tới máy in bị lỗi (' + r.status + ')');
+    }
+  }
+
+  function renderUsbStatus() {
+    const el = $('#usbStatus');
+    if (!el) return;
+    const on = !!(usbp.device && usbp.device.opened);
+    el.classList.toggle('ok', on);
+    $('#usbStatusText').textContent = on
+      ? `Máy in tem: ${usbp.device.productName || 'đã kết nối'}`
+      : 'Máy in tem: chưa kết nối (bấm để kết nối)';
+  }
+
+  async function printLabelsUSB(list) {
+    if (!list.length) return toast('Không có khách nào để in', 'err');
+    if (usbp.busy) return toast('Máy in đang in, vui lòng chờ…');
+    usbp.busy = true;
+    try {
+      const dev = await usbConnect(true);
+      if (!dev) return;
+      toast(`Đang gửi ${list.length} tem tới máy in…`);
+      for (let i = 0; i < list.length; i += 10) {
+        await usbSend(buildLabelTSPL(list.slice(i, i + 10)));
+      }
+      toast(`Đã gửi ${list.length} tem tới máy in`);
+    } catch (e) {
+      if (e && e.name === 'NotFoundError') { toast('Chưa chọn máy in tem'); return; }
+      try { if (usbp.device && usbp.device.opened) await usbp.device.close(); } catch (e2) { /* bỏ qua */ }
+      usbp.device = null;
+      renderUsbStatus();
+      toast('Không in được qua USB: ' + ((e && e.message) || e) + ' — rút/cắm lại cáp USB máy in tem rồi thử lại, hoặc dùng "In qua hộp thoại".', 'err');
+    } finally {
+      usbp.busy = false;
+    }
+  }
+
+  if (navigator.usb) {
+    navigator.usb.addEventListener('disconnect', (ev) => {
+      if (usbp.device && ev.device === usbp.device) { usbp.device = null; renderUsbStatus(); toast('Máy in tem đã bị ngắt kết nối', 'err'); }
+    });
+  }
+  // Dùng để kiểm tra lệnh in tem (không ảnh hưởng hoạt động của app)
+  window.CheckinLabels = { buildTSPL: (codes) => buildLabelTSPL(codes.map((code) => S.byCode.get(code)).filter(Boolean)), renderCanvas: renderLabelCanvas };
+
   function exportCSV() {
     const rows = filteredList();
     const cell = (v) => { const s = String(v == null ? '' : v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -728,7 +882,16 @@
     let codeTimer = null;
     $('#codeSearch').addEventListener('input', () => { clearTimeout(codeTimer); codeTimer = setTimeout(() => renderCodes(), 200); });
     $('#printBtn').addEventListener('click', printCards);
-    if ($('#labelBtn')) $('#labelBtn').addEventListener('click', () => printLabels(codesList()));
+    if ($('#labelBtn')) $('#labelBtn').addEventListener('click', () => printLabelsUSB(codesList()));
+    if ($('#labelDialogBtn')) $('#labelDialogBtn').addEventListener('click', () => printLabels(codesList()));
+    if ($('#usbStatus')) {
+      $('#usbStatus').addEventListener('click', async () => {
+        try { if (await usbConnect(true)) toast('Đã kết nối máy in tem'); } catch (e) {
+          if (!e || e.name !== 'NotFoundError') toast('Không kết nối được máy in tem: ' + ((e && e.message) || e), 'err');
+        }
+      });
+      usbConnect(false).catch(() => {}).finally(renderUsbStatus); // tự kết nối lại máy in đã cấp quyền
+    }
     $('#zipBtn').addEventListener('click', downloadZip);
     window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; $('#printArea').className = 'print-area'; });
 
@@ -740,7 +903,7 @@
         if (b.dataset.act === 'checkin') handleScan(code);
         if (b.dataset.act === 'undo') doUndo(code);
         if (b.dataset.act === 'png') downloadPng(code);
-        if (b.dataset.act === 'label' && S.byCode.has(code)) printLabels([S.byCode.get(code)]);
+        if (b.dataset.act === 'label' && S.byCode.has(code)) printLabelsUSB([S.byCode.get(code)]);
         return;
       }
       // Bấm vào vùng trống ở tab Check-in -> trả con trỏ về ô quét

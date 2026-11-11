@@ -22,4 +22,7 @@ window.APP_CONFIG = {
   // Cuộn tem hiện tại: rộng 50mm × cao 30mm -> nội dung nằm ngang, chữ thẳng.
   LABEL_WIDTH_MM: 50,
   LABEL_HEIGHT_MM: 30,
+  // Khe hở giữa 2 tem (mm) và độ phân giải máy in tem (Xprinter XP-470B: 203 dpi)
+  LABEL_GAP_MM: 2,
+  LABEL_DPI: 203,
 };
