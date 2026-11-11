@@ -105,9 +105,10 @@ Máy quét USB ──(gõ mã + Enter)──► Web app (GitHub Pages) ──►
 
 ### Mã vạch gửi khách
 
-- Tab **Mã vạch** → **In tem 30×50mm (ngang)**: in tem nhãn trên máy in tem, mỗi khách 1 tem (tên + mã vạch + mã KH), nội dung nằm theo cạnh dài 50mm để mã vạch dài, dễ quét. Nút **In tem** trên từng thẻ để in riêng 1 khách.
-  - Trong hộp thoại in của Chrome: chọn máy in tem → **Khổ giấy 30 x 50 mm** → Hướng: **Ngang (Landscape)** → Lề: **Không có** → Tỷ lệ: **100%** (Mặc định) → bỏ chọn **Đầu trang và chân trang**.
-  - Trong Tùy chọn in (Printing Preferences) của driver máy in tem: tạo/chọn khổ **30 x 50 mm** và đặt Hướng **Ngang (Landscape)**. Nếu tem in ra bị xoay hoặc thu nhỏ, kiểm tra lại 2 mục này.
+- Tab **Mã vạch** → **In tem 30×50mm (ngang)**: in tem khổ ngang (cạnh 50mm nằm ngang), chữ thẳng: tên khách ở trên, mã vạch ở giữa, mã KH ở dưới. Mỗi khách 1 tem; nút **In tem** trên từng thẻ để in riêng 1 khách.
+  - Trong hộp thoại in của Chrome: chọn máy in tem → **Khổ giấy 30 x 50 mm** (app tự ép trang sang **Ngang**) → Lề: **Không có** → Tỷ lệ: **100%** (Mặc định) → bỏ chọn **Đầu trang và chân trang**.
+  - Nếu bản xem trước vẫn đứng dọc hoặc chữ bị xoay: vào Tùy chọn in (Printing Preferences) của driver máy in tem, chọn khổ **30 x 50 mm** và đặt Hướng **Ngang (Landscape)**.
+  - Muốn in tem đứng (chữ chạy theo cạnh 30mm): đặt `LABEL_LANDSCAPE: false` trong `config.js`.
   - Đổi khổ tem khác: sửa `LABEL_WIDTH_MM` / `LABEL_HEIGHT_MM` / `LABEL_LANDSCAPE` trong `config.js`.
 - Tab **Mã vạch** → **In thẻ (A4)**: in thẻ giấy A4 (2 thẻ/hàng).
 - **Tải ảnh PNG** từng khách hoặc **Tải tất cả ảnh (.zip)** để gửi Zalo/email.

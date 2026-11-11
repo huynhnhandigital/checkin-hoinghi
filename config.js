@@ -20,6 +20,7 @@ window.APP_CONFIG = {
   // Khổ tem trên máy in tem (mm): rộng × cao của tem
   LABEL_WIDTH_MM: 30,
   LABEL_HEIGHT_MM: 50,
-  // true = in khổ ngang (nội dung nằm theo cạnh dài 50mm, mã vạch dài dễ quét)
+  // true  = in khổ NGANG: trang in nằm ngang (cạnh 50mm nằm ngang), chữ thẳng, mã vạch dài dễ quét
+  // false = in khổ DỌC: tem đứng (cạnh 30mm nằm ngang)
   LABEL_LANDSCAPE: true,
 };

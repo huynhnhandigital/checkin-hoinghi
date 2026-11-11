@@ -463,14 +463,18 @@
   /** In tem nhãn (khổ theo config.js): mỗi khách 1 tem (1 trang), gồm tên + mã vạch + mã KH. */
   function printLabels(list) {
     if (!list.length) return toast('Không có khách nào để in', 'err');
-    setPageStyle(`@page { size: ${PAGE_W}mm ${PAGE_H}mm; margin: 0; }
+    // Chỉ ép HƯỚNG trang (landscape/portrait) trên khổ giấy đang chọn của máy in tem,
+    // không ép kích thước cố định -> Chrome không tự xoay nội dung khi giấy là 30×50 đứng.
+    setPageStyle(`@page { size: ${PAGE_W >= PAGE_H ? 'landscape' : 'portrait'}; margin: 0; }
       .print-area .lbl { width: ${PAGE_W}mm; height: ${PAGE_H}mm; }`);
     const area = $('#printArea');
-    area.className = 'print-area mode-label';
+    area.className = 'print-area mode-label ' + (PAGE_W >= PAGE_H ? 'landscape' : 'portrait');
     area.innerHTML = list.map((c) => `<div class="lbl"><div class="lbl-name">${esc(c.name || c.code)}</div><svg class="lbl-bc"></svg><div class="lbl-code">${esc(c.code)}</div></div>`).join('');
+    // Tem hẹp (đứng): bỏ lề trong mã vạch để vạch rộng tối đa; lề trắng do khoảng đệm của tem
+    const bcMargin = PAGE_W >= PAGE_H ? 10 : 0;
     $$('.lbl-bc', area).forEach((svg, i) => {
       // Vẽ mã vạch không kèm chữ (chữ in riêng bên dưới), rồi kéo giãn vừa khung tem
-      if (!drawBarcode(svg, list[i].code, { width: 2, height: 60, displayValue: false, margin: 10 })) return;
+      if (!drawBarcode(svg, list[i].code, { width: 2, height: 60, displayValue: false, margin: bcMargin })) return;
       const w = parseFloat(svg.getAttribute('width'));
       const h = parseFloat(svg.getAttribute('height'));
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
