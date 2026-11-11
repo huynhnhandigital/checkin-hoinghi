@@ -105,10 +105,11 @@ Máy quét USB ──(gõ mã + Enter)──► Web app (GitHub Pages) ──►
 
 ### Mã vạch gửi khách
 
-- Tab **Mã vạch** → **In tem 30×50mm (ngang)**: in tem khổ ngang (cạnh 50mm nằm ngang), chữ thẳng: tên khách ở trên, mã vạch ở giữa, mã KH ở dưới. Mỗi khách 1 tem; nút **In tem** trên từng thẻ để in riêng 1 khách.
-  - Trong hộp thoại in của Chrome: chọn máy in tem → **Khổ giấy 30 x 50 mm** (app tự ép trang sang **Ngang**) → Lề: **Không có** → Tỷ lệ: **100%** (Mặc định) → bỏ chọn **Đầu trang và chân trang**.
-  - Nếu bản xem trước vẫn đứng dọc hoặc chữ bị xoay: vào Tùy chọn in (Printing Preferences) của driver máy in tem, chọn khổ **30 x 50 mm** và đặt Hướng **Ngang (Landscape)**.
-  - Muốn in tem đứng (chữ chạy theo cạnh 30mm): đặt `LABEL_LANDSCAPE: false` trong `config.js`.
+- Tab **Mã vạch** → **In tem 50×30mm**: tem rộng 50mm (ngang đầu in) × cao 30mm (theo chiều chạy giấy), chữ thẳng: tên khách ở trên, mã vạch ở giữa, mã KH ở dưới. Mỗi khách 1 tem; nút **In tem** trên từng thẻ để in riêng 1 khách.
+  - Máy in tem (Xprinter XP-470B trên macOS) cần có khổ giấy tùy chỉnh **rộng 50 mm × cao 30 mm, lề 0** (Hộp thoại in hệ thống → Khổ giấy → Quản lý kích thước tùy chỉnh).
+  - Trong hộp thoại in của Chrome: chọn máy in tem → **Khổ giấy 50 x 30 mm** → **Bố cục**: chọn Dọc/Ngang sao cho bản xem trước là tem nằm ngang, chữ thẳng → Lề: **Không có** → Tỷ lệ: **100%** → bỏ chọn **Đầu trang và chân trang**.
+  - Nếu Chrome không có khổ 50×30: bấm **In bằng hộp thoại hệ thống** (⌥⌘P) → chọn khổ đó, Tỷ lệ 100%; ở mục Tính năng máy in đặt **Type: LabelGaps** để máy in canh theo khe hở giữa các tem.
+  - Đổi khổ tem khác: sửa `LABEL_WIDTH_MM` (ngang đầu in) / `LABEL_HEIGHT_MM` (chiều chạy giấy) trong `config.js`.
   - Đổi khổ tem khác: sửa `LABEL_WIDTH_MM` / `LABEL_HEIGHT_MM` / `LABEL_LANDSCAPE` trong `config.js`.
 - Tab **Mã vạch** → **In thẻ (A4)**: in thẻ giấy A4 (2 thẻ/hàng).
 - **Tải ảnh PNG** từng khách hoặc **Tải tất cả ảnh (.zip)** để gửi Zalo/email.

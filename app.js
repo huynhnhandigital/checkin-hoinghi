@@ -9,15 +9,12 @@
 
   const CFG = Object.assign({
     API_URL: '', GOOGLE_CLIENT_ID: '', ORG_NAME: '', EVENT_NAME: 'Check-in khách hàng', REFRESH_SECONDS: 20,
-    LABEL_WIDTH_MM: 30, LABEL_HEIGHT_MM: 50, LABEL_LANDSCAPE: true,
+    LABEL_WIDTH_MM: 50, LABEL_HEIGHT_MM: 30,
   }, window.APP_CONFIG || {});
-  const LABEL_W = Number(CFG.LABEL_WIDTH_MM) || 30;
-  const LABEL_H = Number(CFG.LABEL_HEIGHT_MM) || 50;
-  const LABEL_LAND = CFG.LABEL_LANDSCAPE !== false;
-  // Trang in thực tế: khổ ngang thì cạnh dài nằm ngang, khổ dọc thì cạnh dài nằm dọc
-  const PAGE_W = LABEL_LAND ? Math.max(LABEL_W, LABEL_H) : Math.min(LABEL_W, LABEL_H);
-  const PAGE_H = LABEL_LAND ? Math.min(LABEL_W, LABEL_H) : Math.max(LABEL_W, LABEL_H);
-  const LABEL_TEXT = `${LABEL_W}×${LABEL_H}mm`;
+  // Tem đúng như khi chạy ra khỏi máy in: rộng (ngang đầu in) × cao (chiều chạy giấy)
+  const PAGE_W = Number(CFG.LABEL_WIDTH_MM) || 50;
+  const PAGE_H = Number(CFG.LABEL_HEIGHT_MM) || 30;
+  const LABEL_TEXT = `${PAGE_W}×${PAGE_H}mm`;
   const CONFIGURED = /^https:\/\/script\.google(usercontent)?\.com\//.test(CFG.API_URL) &&
     /\.apps\.googleusercontent\.com$/.test(String(CFG.GOOGLE_CLIENT_ID).trim());
   const PARAMS = new URLSearchParams(location.search);
@@ -463,9 +460,9 @@
   /** In tem nhãn (khổ theo config.js): mỗi khách 1 tem (1 trang), gồm tên + mã vạch + mã KH. */
   function printLabels(list) {
     if (!list.length) return toast('Không có khách nào để in', 'err');
-    // Chỉ ép HƯỚNG trang (landscape/portrait) trên khổ giấy đang chọn của máy in tem,
-    // không ép kích thước cố định -> Chrome không tự xoay nội dung khi giấy là 30×50 đứng.
-    setPageStyle(`@page { size: ${PAGE_W >= PAGE_H ? 'landscape' : 'portrait'}; margin: 0; }
+    // KHÔNG ép kích thước/hướng trang: để Chrome hiện mục "Bố cục" (Dọc/Ngang) và dùng đúng
+    // khổ giấy chọn trong hộp thoại in (vd khổ tùy chỉnh 50×30mm). Ép trong CSS làm macOS xoay nội dung.
+    setPageStyle(`@page { margin: 0; }
       .print-area .lbl { width: ${PAGE_W}mm; height: ${PAGE_H}mm; }`);
     const area = $('#printArea');
     area.className = 'print-area mode-label ' + (PAGE_W >= PAGE_H ? 'landscape' : 'portrait');
@@ -784,9 +781,8 @@
     $('#loginEvent').textContent = CFG.EVENT_NAME;
     $('#orgName').textContent = CFG.ORG_NAME;
     $('#eventName').textContent = CFG.EVENT_NAME;
-    if ($('#labelBtn')) $('#labelBtn').textContent = `In tem ${LABEL_TEXT}${LABEL_LAND ? ' (ngang)' : ''}`;
-    if ($('#labelHint')) $('#labelHint').textContent = `${LABEL_W} x ${LABEL_H} mm`;
-    if ($('#labelOrient')) $('#labelOrient').textContent = LABEL_LAND ? 'Ngang (Landscape)' : 'Dọc (Portrait)';
+    if ($('#labelBtn')) $('#labelBtn').textContent = `In tem ${LABEL_TEXT}`;
+    if ($('#labelHint')) $('#labelHint').textContent = `${PAGE_W} x ${PAGE_H} mm`;
     renderMute();
     bindEvents();
     if (PARAMS.has('demo')) $('#demoBtn').classList.remove('hidden');

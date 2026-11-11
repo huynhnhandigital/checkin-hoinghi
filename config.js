@@ -17,10 +17,9 @@ window.APP_CONFIG = {
   // Tự làm mới dữ liệu mỗi bao nhiêu giây (đồng bộ khi có nhiều máy check-in)
   REFRESH_SECONDS: 20,
 
-  // Khổ tem trên máy in tem (mm): rộng × cao của tem
-  LABEL_WIDTH_MM: 30,
-  LABEL_HEIGHT_MM: 50,
-  // true  = in khổ NGANG: trang in nằm ngang (cạnh 50mm nằm ngang), chữ thẳng, mã vạch dài dễ quét
-  // false = in khổ DỌC: tem đứng (cạnh 30mm nằm ngang)
-  LABEL_LANDSCAPE: true,
+  // Kích thước tem (mm) đúng như khi tem chạy ra khỏi máy in:
+  // RỘNG = cạnh nằm ngang đầu in, CAO = cạnh theo chiều chạy giấy.
+  // Cuộn tem hiện tại: rộng 50mm × cao 30mm -> nội dung nằm ngang, chữ thẳng.
+  LABEL_WIDTH_MM: 50,
+  LABEL_HEIGHT_MM: 30,
 };
