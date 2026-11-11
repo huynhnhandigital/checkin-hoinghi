@@ -722,7 +722,7 @@
     let codeTimer = null;
     $('#codeSearch').addEventListener('input', () => { clearTimeout(codeTimer); codeTimer = setTimeout(() => renderCodes(), 200); });
     $('#printBtn').addEventListener('click', printCards);
-    $('#labelBtn').addEventListener('click', () => printLabels(codesList()));
+    if ($('#labelBtn')) $('#labelBtn').addEventListener('click', () => printLabels(codesList()));
     $('#zipBtn').addEventListener('click', downloadZip);
     window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; $('#printArea').className = 'print-area'; });
 
@@ -775,8 +775,8 @@
     $('#loginEvent').textContent = CFG.EVENT_NAME;
     $('#orgName').textContent = CFG.ORG_NAME;
     $('#eventName').textContent = CFG.EVENT_NAME;
-    $('#labelBtn').textContent = `In tem ${LABEL_W}×${LABEL_H}mm`;
-    $('#labelHint').textContent = `${LABEL_W}×${LABEL_H}mm`;
+    if ($('#labelBtn')) $('#labelBtn').textContent = `In tem ${LABEL_W}×${LABEL_H}mm`;
+    if ($('#labelHint')) $('#labelHint').textContent = `${LABEL_W}×${LABEL_H}mm`;
     renderMute();
     bindEvents();
     if (PARAMS.has('demo')) $('#demoBtn').classList.remove('hidden');
