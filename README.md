@@ -105,7 +105,11 @@ Máy quét USB ──(gõ mã + Enter)──► Web app (GitHub Pages) ──►
 
 ### Mã vạch gửi khách
 
-- Tab **Mã vạch** → **In thẻ (A4)**: in thẻ giấy, quét ổn định nhất.
+- Tab **Mã vạch** → **In tem 50×30mm**: in tem nhãn trên máy in tem, mỗi khách 1 tem (tên + mã vạch + mã KH). Nút **In tem** trên từng thẻ để in riêng 1 khách.
+  - Trong hộp thoại in của Chrome: chọn máy in tem → **Khổ giấy 50 x 30 mm** → Lề: **Không có** → Tỷ lệ: **100%** (Mặc định) → bỏ chọn **Đầu trang và chân trang**.
+  - Nếu danh sách khổ giấy chưa có 50×30mm: vào cài đặt driver máy in tem (Tùy chọn in / Printing Preferences) tạo khổ giấy 50×30mm.
+  - Đổi kích thước tem khác: sửa `LABEL_WIDTH_MM` / `LABEL_HEIGHT_MM` trong `config.js`.
+- Tab **Mã vạch** → **In thẻ (A4)**: in thẻ giấy A4 (2 thẻ/hàng).
 - **Tải ảnh PNG** từng khách hoặc **Tải tất cả ảnh (.zip)** để gửi Zalo/email.
 - ⚠️ Máy quét laser 1D thường **không đọc được mã trên màn hình điện thoại**. Hãy thử trước: mở ảnh PNG trên điện thoại, tăng độ sáng tối đa và quét thử. Nếu không đọc được, hãy in thẻ cho khách.
 

@@ -9,7 +9,10 @@
 
   const CFG = Object.assign({
     API_URL: '', GOOGLE_CLIENT_ID: '', ORG_NAME: '', EVENT_NAME: 'Check-in khách hàng', REFRESH_SECONDS: 20,
+    LABEL_WIDTH_MM: 50, LABEL_HEIGHT_MM: 30,
   }, window.APP_CONFIG || {});
+  const LABEL_W = Number(CFG.LABEL_WIDTH_MM) || 50;
+  const LABEL_H = Number(CFG.LABEL_HEIGHT_MM) || 30;
   const CONFIGURED = /^https:\/\/script\.google(usercontent)?\.com\//.test(CFG.API_URL) &&
     /\.apps\.googleusercontent\.com$/.test(String(CFG.GOOGLE_CLIENT_ID).trim());
   const PARAMS = new URLSearchParams(location.search);
@@ -325,7 +328,10 @@
       <div class="bc-card" data-code="${esc(c.code)}">
         <div class="bc-name">${esc(c.name || c.code)}</div>
         <svg class="bc-svg"></svg>
-        <button class="btn small" type="button" data-act="png" data-code="${esc(c.code)}">Tải ảnh PNG</button>
+        <div class="bc-actions">
+          <button class="btn small" type="button" data-act="label" data-code="${esc(c.code)}">In tem</button>
+          <button class="btn small" type="button" data-act="png" data-code="${esc(c.code)}">Tải ảnh PNG</button>
+        </div>
       </div>`).join('') : '<p class="muted">Không có khách nào phù hợp.</p>';
     $$('.bc-card', grid).forEach((card) => drawBarcode($('svg', card), card.dataset.code, { width: 2, height: 64, fontSize: 16, margin: 10 }));
   }
@@ -426,13 +432,48 @@
     }
   }
 
+  // Khổ giấy khi in được đặt động: A4 cho thẻ, LABEL_W × LABEL_H mm cho tem
+  function setPageStyle(css) {
+    let el = $('#pageStyle');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'pageStyle';
+      document.head.appendChild(el);
+    }
+    el.textContent = css;
+  }
+
   function printCards() {
     const list = codesList();
     if (!list.length) return toast('Không có khách nào để in', 'err');
+    setPageStyle('@page { size: A4; margin: 10mm; }');
     const area = $('#printArea');
+    area.className = 'print-area mode-a4';
     const ev = [CFG.ORG_NAME, CFG.EVENT_NAME].filter(Boolean).join(' · ');
     area.innerHTML = list.map((c) => `<div class="p-card"><div class="p-event">${esc(ev)}</div><div class="p-name">${esc(c.name || c.code)}</div><svg></svg></div>`).join('');
     $$('.p-card svg', area).forEach((svg, i) => drawBarcode(svg, list[i].code, { width: 2, height: 60, fontSize: 15, margin: 8 }));
+    window.print();
+  }
+
+  /** In tem nhãn LABEL_W × LABEL_H mm: mỗi khách 1 tem (1 trang), gồm tên + mã vạch + mã KH. */
+  function printLabels(list) {
+    if (!list.length) return toast('Không có khách nào để in', 'err');
+    setPageStyle(`@page { size: ${LABEL_W}mm ${LABEL_H}mm; margin: 0; }
+      .print-area .lbl { width: ${LABEL_W}mm; height: ${LABEL_H}mm; }`);
+    const area = $('#printArea');
+    area.className = 'print-area mode-label';
+    area.innerHTML = list.map((c) => `<div class="lbl"><div class="lbl-name">${esc(c.name || c.code)}</div><svg class="lbl-bc"></svg><div class="lbl-code">${esc(c.code)}</div></div>`).join('');
+    $$('.lbl-bc', area).forEach((svg, i) => {
+      // Vẽ mã vạch không kèm chữ (chữ in riêng bên dưới), rồi kéo giãn vừa khung tem
+      if (!drawBarcode(svg, list[i].code, { width: 2, height: 60, displayValue: false, margin: 10 })) return;
+      const w = parseFloat(svg.getAttribute('width'));
+      const h = parseFloat(svg.getAttribute('height'));
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.removeAttribute('style');
+    });
     window.print();
   }
 
@@ -681,8 +722,9 @@
     let codeTimer = null;
     $('#codeSearch').addEventListener('input', () => { clearTimeout(codeTimer); codeTimer = setTimeout(() => renderCodes(), 200); });
     $('#printBtn').addEventListener('click', printCards);
+    $('#labelBtn').addEventListener('click', () => printLabels(codesList()));
     $('#zipBtn').addEventListener('click', downloadZip);
-    window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; });
+    window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; $('#printArea').className = 'print-area'; });
 
     // Nút hành động trong danh sách / kết quả
     document.addEventListener('click', (e) => {
@@ -692,6 +734,7 @@
         if (b.dataset.act === 'checkin') handleScan(code);
         if (b.dataset.act === 'undo') doUndo(code);
         if (b.dataset.act === 'png') downloadPng(code);
+        if (b.dataset.act === 'label' && S.byCode.has(code)) printLabels([S.byCode.get(code)]);
         return;
       }
       // Bấm vào vùng trống ở tab Check-in -> trả con trỏ về ô quét
@@ -732,6 +775,8 @@
     $('#loginEvent').textContent = CFG.EVENT_NAME;
     $('#orgName').textContent = CFG.ORG_NAME;
     $('#eventName').textContent = CFG.EVENT_NAME;
+    $('#labelBtn').textContent = `In tem ${LABEL_W}×${LABEL_H}mm`;
+    $('#labelHint').textContent = `${LABEL_W}×${LABEL_H}mm`;
     renderMute();
     bindEvents();
     if (PARAMS.has('demo')) $('#demoBtn').classList.remove('hidden');

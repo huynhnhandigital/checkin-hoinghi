@@ -102,9 +102,14 @@
         <div class="toolbar">
           <input id="codeSearch" class="input grow" type="search" placeholder="Tìm khách để in hoặc tải mã vạch…" autocomplete="off">
           <button id="printBtn" class="btn" type="button">In thẻ (A4)</button>
-          <button id="zipBtn" class="btn primary" type="button">Tải tất cả ảnh (.zip)</button>
+          <button id="labelBtn" class="btn primary" type="button">In tem 50×30mm</button>
+          <button id="zipBtn" class="btn" type="button">Tải tất cả ảnh (.zip)</button>
         </div>
-        <p class="muted small hint">Thẻ in giấy quét ổn định nhất. Ảnh PNG dùng để gửi khách qua Zalo/email — hãy thử trước xem máy quét có đọc được mã trên màn hình điện thoại không.</p>
+        <p class="muted small hint">
+          <b>In tem trên máy in tem:</b> trong hộp thoại in chọn đúng máy in tem, Khổ giấy <b id="labelHint">50×30mm</b>, Lề: <b>Không có</b>, Tỷ lệ: <b>100%</b>, bỏ chọn <b>Đầu trang và chân trang</b>.
+          Mỗi khách in 1 tem; bấm "In tem" trên từng thẻ để in riêng 1 khách.
+          Ảnh PNG dùng để gửi khách qua Zalo/email — hãy thử trước xem máy quét có đọc được mã trên màn hình điện thoại không.
+        </p>
         <div id="codeGrid" class="code-grid"></div>
       </section>
     </main>

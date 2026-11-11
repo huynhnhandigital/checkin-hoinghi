@@ -16,4 +16,8 @@ window.APP_CONFIG = {
 
   // Tự làm mới dữ liệu mỗi bao nhiêu giây (đồng bộ khi có nhiều máy check-in)
   REFRESH_SECONDS: 20,
+
+  // Kích thước tem nhãn cho máy in tem (mm)
+  LABEL_WIDTH_MM: 50,
+  LABEL_HEIGHT_MM: 30,
 };
