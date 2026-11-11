@@ -9,10 +9,15 @@
 
   const CFG = Object.assign({
     API_URL: '', GOOGLE_CLIENT_ID: '', ORG_NAME: '', EVENT_NAME: 'Check-in khách hàng', REFRESH_SECONDS: 20,
-    LABEL_WIDTH_MM: 50, LABEL_HEIGHT_MM: 30,
+    LABEL_WIDTH_MM: 30, LABEL_HEIGHT_MM: 50, LABEL_LANDSCAPE: true,
   }, window.APP_CONFIG || {});
-  const LABEL_W = Number(CFG.LABEL_WIDTH_MM) || 50;
-  const LABEL_H = Number(CFG.LABEL_HEIGHT_MM) || 30;
+  const LABEL_W = Number(CFG.LABEL_WIDTH_MM) || 30;
+  const LABEL_H = Number(CFG.LABEL_HEIGHT_MM) || 50;
+  const LABEL_LAND = CFG.LABEL_LANDSCAPE !== false;
+  // Trang in thực tế: khổ ngang thì cạnh dài nằm ngang, khổ dọc thì cạnh dài nằm dọc
+  const PAGE_W = LABEL_LAND ? Math.max(LABEL_W, LABEL_H) : Math.min(LABEL_W, LABEL_H);
+  const PAGE_H = LABEL_LAND ? Math.min(LABEL_W, LABEL_H) : Math.max(LABEL_W, LABEL_H);
+  const LABEL_TEXT = `${LABEL_W}×${LABEL_H}mm`;
   const CONFIGURED = /^https:\/\/script\.google(usercontent)?\.com\//.test(CFG.API_URL) &&
     /\.apps\.googleusercontent\.com$/.test(String(CFG.GOOGLE_CLIENT_ID).trim());
   const PARAMS = new URLSearchParams(location.search);
@@ -455,11 +460,11 @@
     window.print();
   }
 
-  /** In tem nhãn LABEL_W × LABEL_H mm: mỗi khách 1 tem (1 trang), gồm tên + mã vạch + mã KH. */
+  /** In tem nhãn (khổ theo config.js): mỗi khách 1 tem (1 trang), gồm tên + mã vạch + mã KH. */
   function printLabels(list) {
     if (!list.length) return toast('Không có khách nào để in', 'err');
-    setPageStyle(`@page { size: ${LABEL_W}mm ${LABEL_H}mm; margin: 0; }
-      .print-area .lbl { width: ${LABEL_W}mm; height: ${LABEL_H}mm; }`);
+    setPageStyle(`@page { size: ${PAGE_W}mm ${PAGE_H}mm; margin: 0; }
+      .print-area .lbl { width: ${PAGE_W}mm; height: ${PAGE_H}mm; }`);
     const area = $('#printArea');
     area.className = 'print-area mode-label';
     area.innerHTML = list.map((c) => `<div class="lbl"><div class="lbl-name">${esc(c.name || c.code)}</div><svg class="lbl-bc"></svg><div class="lbl-code">${esc(c.code)}</div></div>`).join('');
@@ -775,8 +780,9 @@
     $('#loginEvent').textContent = CFG.EVENT_NAME;
     $('#orgName').textContent = CFG.ORG_NAME;
     $('#eventName').textContent = CFG.EVENT_NAME;
-    if ($('#labelBtn')) $('#labelBtn').textContent = `In tem ${LABEL_W}×${LABEL_H}mm`;
-    if ($('#labelHint')) $('#labelHint').textContent = `${LABEL_W}×${LABEL_H}mm`;
+    if ($('#labelBtn')) $('#labelBtn').textContent = `In tem ${LABEL_TEXT}${LABEL_LAND ? ' (ngang)' : ''}`;
+    if ($('#labelHint')) $('#labelHint').textContent = `${LABEL_W} x ${LABEL_H} mm`;
+    if ($('#labelOrient')) $('#labelOrient').textContent = LABEL_LAND ? 'Ngang (Landscape)' : 'Dọc (Portrait)';
     renderMute();
     bindEvents();
     if (PARAMS.has('demo')) $('#demoBtn').classList.remove('hidden');

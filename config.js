@@ -17,7 +17,9 @@ window.APP_CONFIG = {
   // Tự làm mới dữ liệu mỗi bao nhiêu giây (đồng bộ khi có nhiều máy check-in)
   REFRESH_SECONDS: 20,
 
-  // Kích thước tem nhãn cho máy in tem (mm)
-  LABEL_WIDTH_MM: 50,
-  LABEL_HEIGHT_MM: 30,
+  // Khổ tem trên máy in tem (mm): rộng × cao của tem
+  LABEL_WIDTH_MM: 30,
+  LABEL_HEIGHT_MM: 50,
+  // true = in khổ ngang (nội dung nằm theo cạnh dài 50mm, mã vạch dài dễ quét)
+  LABEL_LANDSCAPE: true,
 };
