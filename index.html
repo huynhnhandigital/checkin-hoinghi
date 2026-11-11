@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Check-in khách hàng</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b5cad'/%3E%3Cpath d='M7 8v16M10 8v16M14 8v16M16 8v16M20 8v16M24 8v16M26 8v16' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loading" class="loading"><div class="spinner"></div><p>Đang tải dữ liệu…</p></div>
+
+  <!-- ĐĂNG NHẬP -->
+  <section id="login" class="login hidden">
+    <div class="login-card">
+      <div class="login-logo" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><rect width="48" height="48" rx="12" fill="currentColor"/><path d="M11 13v22M15 13v22M20 13v22M23 13v22M28 13v22M33 13v22M36 13v22" stroke="#fff" stroke-width="2.2"/></svg>
+      </div>
+      <p class="login-org" id="loginOrg"></p>
+      <h1 id="loginEvent">Check-in khách hàng</h1>
+      <p class="muted">Đăng nhập bằng Gmail nhân viên để bắt đầu check-in.</p>
+      <div id="gbtn" class="gbtn"></div>
+      <p id="loginMsg" class="login-msg"></p>
+      <button id="demoBtn" class="btn ghost hidden" type="button">Dùng thử với dữ liệu mẫu</button>
+    </div>
+  </section>
+
+  <!-- ỨNG DỤNG -->
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><rect width="48" height="48" rx="12" fill="currentColor"/><path d="M11 13v22M15 13v22M20 13v22M23 13v22M28 13v22M33 13v22M36 13v22" stroke="#fff" stroke-width="2.2"/></svg></span>
+        <div class="brand-text"><div class="brand-org" id="orgName"></div><div class="brand-event" id="eventName"></div></div>
+        <span id="demoBadge" class="pill warn hidden">Dùng thử</span>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="scan" type="button">Check-in</button>
+        <button class="tab-btn" data-tab="list" type="button">Danh sách</button>
+        <button class="tab-btn" data-tab="codes" type="button">Mã vạch</button>
+      </nav>
+      <div class="userbox">
+        <button id="syncBtn" class="sync" type="button" title="Bấm để làm mới dữ liệu ngay"><span class="dot"></span><span id="syncText">—</span></button>
+        <button id="muteBtn" class="icon-btn" type="button" title="Bật/tắt âm báo"></button>
+        <img id="avatar" class="avatar hidden" alt="" referrerpolicy="no-referrer">
+        <span id="userEmail" class="user-email"></span>
+        <button id="logoutBtn" class="btn small ghost" type="button">Đăng xuất</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- TAB CHECK-IN -->
+      <section id="tab-scan" class="tab">
+        <div class="scan-layout">
+          <div class="scan-col">
+            <label class="scanbox" for="scanInput">
+              <span class="scan-ready" id="scanReady"><span class="pulse"></span><span id="scanReadyText">Sẵn sàng quét</span></span>
+              <input id="scanInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Quét mã vạch hoặc gõ mã KH rồi nhấn Enter">
+            </label>
+            <div id="result" class="result idle" aria-live="polite"></div>
+          </div>
+          <aside class="side-col">
+            <div class="card stats">
+              <div class="stats-top">
+                <div>
+                  <div class="stat-big"><span id="stDone">0</span><span class="stat-total"> / <span id="stTotal">0</span></span></div>
+                  <div class="muted">khách đã check-in</div>
+                </div>
+                <div class="stat-pct" id="stPct">0%</div>
+              </div>
+              <div class="bar"><span id="stBar"></span></div>
+              <div class="muted small">Còn <b id="stLeft">0</b> khách chưa đến</div>
+            </div>
+            <div class="card">
+              <h3>Tra cứu khi khách quên mã</h3>
+              <input id="lookup" class="input" type="search" placeholder="Nhập tên hoặc mã KH…" autocomplete="off">
+              <ul id="lookupResults" class="mini-list"></ul>
+            </div>
+            <div class="card">
+              <h3>Vừa check-in</h3>
+              <ul id="recent" class="mini-list"></ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- TAB DANH SÁCH -->
+      <section id="tab-list" class="tab hidden">
+        <div class="toolbar">
+          <input id="listSearch" class="input grow" type="search" placeholder="Tìm theo tên, mã KH, khu vực…" autocomplete="off">
+          <div class="seg" id="filterSeg">
+            <button type="button" data-filter="all" class="active">Tất cả <span></span></button>
+            <button type="button" data-filter="in">Đã check-in <span></span></button>
+            <button type="button" data-filter="out">Chưa đến <span></span></button>
+          </div>
+          <button id="exportBtn" class="btn primary" type="button">Xuất Excel (CSV)</button>
+        </div>
+        <div class="table-wrap card flush"><table class="table" id="listTable"><thead></thead><tbody></tbody></table></div>
+      </section>
+
+      <!-- TAB MÃ VẠCH -->
+      <section id="tab-codes" class="tab hidden">
+        <div class="toolbar">
+          <input id="codeSearch" class="input grow" type="search" placeholder="Tìm khách để in hoặc tải mã vạch…" autocomplete="off">
+          <button id="printBtn" class="btn" type="button">In thẻ (A4)</button>
+          <button id="zipBtn" class="btn primary" type="button">Tải tất cả ảnh (.zip)</button>
+        </div>
+        <p class="muted small hint">Thẻ in giấy quét ổn định nhất. Ảnh PNG dùng để gửi khách qua Zalo/email — hãy thử trước xem máy quét có đọc được mã trên màn hình điện thoại không.</p>
+        <div id="codeGrid" class="code-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="printArea" class="print-area"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer onload="onGsiLoaded()"></script>
+</body>
+</html>
